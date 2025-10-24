@@ -89,9 +89,7 @@ function getChannels() {
 }
 
 async function getChannelIds() {
-  return (
-    await getChannels().then((channels) => channels.map(({ id }) => id))
-  );
+  return await getChannels().then((channels) => channels.map(({ id }) => id));
 }
 
 async function getDmChannelId(userId: string) {
@@ -254,6 +252,29 @@ client.on("MESSAGE_CREATED", async ({ body }) => {
   const ping = Date.now() - createdAt.getTime();
 
   const message = `@${name} pong! (${ping}ms)`;
+
+  console.log(`Sending message: ${message}`);
+
+  await api.channels.postMessage(channelId, { content: message, embed: true });
+});
+
+client.on("MESSAGE_CREATED", async ({ body }) => {
+  const {
+    user: { name },
+    plainText,
+    channelId,
+  } = body.message;
+  if (!plainText.includes("o_o gacha")) return;
+
+  const x = Math.floor(Math.random() * 200) + 1;
+  const message =
+    name == "uni_kakurenbo"
+      ? "oo"
+      : name == "o_o"
+      ? "o" + "_".repeat(300) + "o"
+      : name == "sabakunosaboten"
+      ? "o" + "_".repeat(x + 250) + "o"
+      : "o" + "_".repeat(x) + "o";
 
   console.log(`Sending message: ${message}`);
 
