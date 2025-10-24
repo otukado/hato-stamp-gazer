@@ -38,207 +38,207 @@ client.listen(() => {
   console.log("Listening...");
 });
 
-const FETCH_INTERVAL_MS: number = 10 * 60 * 1000;
+// const FETCH_INTERVAL_MS: number = 10 * 60 * 1000;
 
-const STAMP_IDS = [
-  "01980754-cd9d-7362-8f32-713249662413", // o_o_fake
-  "01976a21-6a11-715d-9f20-a45ecaea4688", // hato
-  "0197c5ea-e884-7b50-a8f6-23998164ad96", // hato_kourin
-] as const;
+// const STAMP_IDS = [
+//   "01980754-cd9d-7362-8f32-713249662413", // o_o_fake
+//   "01976a21-6a11-715d-9f20-a45ecaea4688", // hato
+//   "0197c5ea-e884-7b50-a8f6-23998164ad96", // hato_kourin
+// ] as const;
 
-const TARGET_USER_ID = "019623b2-9ccc-7ba8-b7c6-14664b78f093";
+// const TARGET_USER_ID = "019623b2-9ccc-7ba8-b7c6-14664b78f093";
 
-const MESSAGE = (stampName: string, channelPaths: string[]) =>
-  `${channelPaths.join(
-    ", "
-  )} に :${stampName}: が押された投稿があります :choo-choo-train-nya:`;
+// const MESSAGE = (stampName: string, channelPaths: string[]) =>
+//   `${channelPaths.join(
+//     ", "
+//   )} に :${stampName}: が押された投稿があります :choo-choo-train-nya:`;
 
-type StampCountList = Record<(typeof STAMP_IDS)[number], number>;
-type ChannelStampCountList = Record<string, number>;
-type ChannelStampCountLists = Record<
-  (typeof STAMP_IDS)[number],
-  ChannelStampCountList
->;
+// type StampCountList = Record<(typeof STAMP_IDS)[number], number>;
+// type ChannelStampCountList = Record<string, number>;
+// type ChannelStampCountLists = Record<
+//   (typeof STAMP_IDS)[number],
+//   ChannelStampCountList
+// >;
 
-let channelIds: string[];
-let stampCountList: StampCountList;
-let channelStampCountLists: ChannelStampCountLists;
-const targetChannelId = await getDmChannelId(TARGET_USER_ID);
+// let channelIds: string[];
+// let stampCountList: StampCountList;
+// let channelStampCountLists: ChannelStampCountLists;
+// const targetChannelId = await getDmChannelId(TARGET_USER_ID);
 
-await setup();
+// await setup();
 
-function promiseSequential<T>(promises: (() => Promise<T>)[]) {
-  return promises.reduce((acc, cur) => {
-    return acc.then(async (arr) => [...arr, await cur()]);
-  }, Promise.resolve([] as T[]));
-}
+// function promiseSequential<T>(promises: (() => Promise<T>)[]) {
+//   return promises.reduce((acc, cur) => {
+//     return acc.then(async (arr) => [...arr, await cur()]);
+//   }, Promise.resolve([] as T[]));
+// }
 
-function promiseSemiSequential<T>(promises: (() => Promise<T>)[], size = 100) {
-  return promiseSequential(
-    _.chunk(promises, size).map(
-      (chunk) => () => Promise.all(chunk.map((promise) => promise()))
-    )
-  ).then((result) => result.flat(1));
-}
+// function promiseSemiSequential<T>(promises: (() => Promise<T>)[], size = 100) {
+//   return promiseSequential(
+//     _.chunk(promises, size).map(
+//       (chunk) => () => Promise.all(chunk.map((promise) => promise()))
+//     )
+//   ).then((result) => result.flat(1));
+// }
 
-function getChannels() {
-  return api.channels
-    .getChannels()
-    .then((response) => response.json() as Promise<ChannelList>)
-    .then((channelList) => channelList.public);
-}
+// function getChannels() {
+//   return api.channels
+//     .getChannels()
+//     .then((response) => response.json() as Promise<ChannelList>)
+//     .then((channelList) => channelList.public);
+// }
 
-async function getChannelIds() {
-  return await getChannels().then((channels) => channels.map(({ id }) => id));
-}
+// async function getChannelIds() {
+//   return await getChannels().then((channels) => channels.map(({ id }) => id));
+// }
 
-async function getDmChannelId(userId: string) {
-  return api.users
-    .getUserDmChannel(userId)
-    .then((response) => response.json() as Promise<DMChannel>)
-    .then(({ id }) => id);
-}
+// async function getDmChannelId(userId: string) {
+//   return api.users
+//     .getUserDmChannel(userId)
+//     .then((response) => response.json() as Promise<DMChannel>)
+//     .then(({ id }) => id);
+// }
 
-async function getStampName(stampId: string) {
-  return api.stamps
-    .getStamp(stampId)
-    .then((response) => response.json() as Promise<Stamp>)
-    .then(({ name }) => name);
-}
+// async function getStampName(stampId: string) {
+//   return api.stamps
+//     .getStamp(stampId)
+//     .then((response) => response.json() as Promise<Stamp>)
+//     .then(({ name }) => name);
+// }
 
-async function getChannelPath(channelId: string) {
-  return api
-    .request<{ path: string }, void>({
-      path: `/channels/${channelId}/path`,
-      method: "GET",
-      secure: true,
-      format: "json",
-    })
-    .then((response) => response.json() as any)
-    .then(({ path }) => path as string);
-}
+// async function getChannelPath(channelId: string) {
+//   return api
+//     .request<{ path: string }, void>({
+//       path: `/channels/${channelId}/path`,
+//       method: "GET",
+//       secure: true,
+//       format: "json",
+//     })
+//     .then((response) => response.json() as any)
+//     .then(({ path }) => path as string);
+// }
 
-async function getStampCount(
-  stampId: string,
-  channelId?: string
-): Promise<number> {
-  const result = await traqing.get(`/stamps`, {
-    params: {
-      stampId,
-      channelId,
-      isBot: false,
-      order: "asc",
-      limit: 1001,
-      offset: 0,
-      after: new Date(0),
-      before: new Date(),
-    },
-  });
+// async function getStampCount(
+//   stampId: string,
+//   channelId?: string
+// ): Promise<number> {
+//   const result = await traqing.get(`/stamps`, {
+//     params: {
+//       stampId,
+//       channelId,
+//       isBot: false,
+//       order: "asc",
+//       limit: 1001,
+//       offset: 0,
+//       after: new Date(0),
+//       before: new Date(),
+//     },
+//   });
 
-  return result.data[0].count;
-}
+//   return result.data[0].count;
+// }
 
-async function getStampCountList(channelId?: string): Promise<StampCountList> {
-  return Object.fromEntries(
-    await Promise.all(
-      STAMP_IDS.map(async (stampId) => [
-        stampId,
-        await getStampCount(stampId, channelId),
-      ])
-    )
-  );
-}
+// async function getStampCountList(channelId?: string): Promise<StampCountList> {
+//   return Object.fromEntries(
+//     await Promise.all(
+//       STAMP_IDS.map(async (stampId) => [
+//         stampId,
+//         await getStampCount(stampId, channelId),
+//       ])
+//     )
+//   );
+// }
 
-async function getChannelStampCountList(
-  stampId: string
-): Promise<ChannelStampCountList> {
-  return Object.fromEntries(
-    await promiseSemiSequential(
-      channelIds.map((channelId) => {
-        return async () => [channelId, await getStampCount(stampId, channelId)];
-      })
-    )
-  );
-}
+// async function getChannelStampCountList(
+//   stampId: string
+// ): Promise<ChannelStampCountList> {
+//   return Object.fromEntries(
+//     await promiseSemiSequential(
+//       channelIds.map((channelId) => {
+//         return async () => [channelId, await getStampCount(stampId, channelId)];
+//       })
+//     )
+//   );
+// }
 
-async function getChannelStampCountLists(): Promise<ChannelStampCountLists> {
-  return Object.fromEntries(
-    await Promise.all(
-      STAMP_IDS.map(async (stampId) => [
-        stampId,
-        await getChannelStampCountList(stampId),
-      ])
-    )
-  );
-}
+// async function getChannelStampCountLists(): Promise<ChannelStampCountLists> {
+//   return Object.fromEntries(
+//     await Promise.all(
+//       STAMP_IDS.map(async (stampId) => [
+//         stampId,
+//         await getChannelStampCountList(stampId),
+//       ])
+//     )
+//   );
+// }
 
-function compareStampCountLists(
-  previous: StampCountList,
-  current: StampCountList
-) {
-  return STAMP_IDS.filter((stampId) => previous[stampId] < current[stampId]);
-}
+// function compareStampCountLists(
+//   previous: StampCountList,
+//   current: StampCountList
+// ) {
+//   return STAMP_IDS.filter((stampId) => previous[stampId] < current[stampId]);
+// }
 
-function compareChannelStampCountList(
-  previous: ChannelStampCountList,
-  current: ChannelStampCountList
-) {
-  return channelIds.filter((channelId) => {
-    return previous[channelId]! < current[channelId]!;
-  });
-}
+// function compareChannelStampCountList(
+//   previous: ChannelStampCountList,
+//   current: ChannelStampCountList
+// ) {
+//   return channelIds.filter((channelId) => {
+//     return previous[channelId]! < current[channelId]!;
+//   });
+// }
 
-async function setup() {
-  console.log("setup");
+// async function setup() {
+//   console.log("setup");
 
-  channelIds = await getChannelIds();
+//   channelIds = await getChannelIds();
 
-  console.log(channelIds);
+//   console.log(channelIds);
 
-  stampCountList = await getStampCountList();
-  channelStampCountLists = await getChannelStampCountLists();
+//   stampCountList = await getStampCountList();
+//   channelStampCountLists = await getChannelStampCountLists();
 
-  setInterval(main, FETCH_INTERVAL_MS);
-}
+//   setInterval(main, FETCH_INTERVAL_MS);
+// }
 
-async function main() {
-  console.log("main");
+// async function main() {
+//   console.log("main");
+// }
+//   const currentStampCountList = await getStampCountList();
+//   // currentStampCountList[STAMP_IDS[0]] += 1;
 
-  const currentStampCountList = await getStampCountList();
-  // currentStampCountList[STAMP_IDS[0]] += 1;
+//   const addedStampIds = compareStampCountLists(
+//     stampCountList,
+//     currentStampCountList
+//   );
+//   stampCountList = currentStampCountList;
 
-  const addedStampIds = compareStampCountLists(
-    stampCountList,
-    currentStampCountList
-  );
-  stampCountList = currentStampCountList;
+//   addedStampIds.forEach(async (stampId) => {
+//     const currentChannelStampCountList = await getChannelStampCountList(
+//       stampId
+//     );
+//     // currentChannelStampCountList[channelIds[0]!]! += 1;
 
-  addedStampIds.forEach(async (stampId) => {
-    const currentChannelStampCountList = await getChannelStampCountList(
-      stampId
-    );
-    // currentChannelStampCountList[channelIds[0]!]! += 1;
+//     const addedChannelIds = compareChannelStampCountList(
+//       channelStampCountLists[stampId],
+//       currentChannelStampCountList
+//     );
+//     channelStampCountLists[stampId] = currentChannelStampCountList;
 
-    const addedChannelIds = compareChannelStampCountList(
-      channelStampCountLists[stampId],
-      currentChannelStampCountList
-    );
-    channelStampCountLists[stampId] = currentChannelStampCountList;
+//     const stampName = await getStampName(stampId);
+//     const channelPaths = await Promise.all(
+//       addedChannelIds.map(
+//         async (channelId) =>
+//           await getChannelPath(channelId).then((path) => `#${path}`)
+//       )
+//     );
 
-    const stampName = await getStampName(stampId);
-    const channelPaths = await Promise.all(
-      addedChannelIds.map(
-        async (channelId) =>
-          await getChannelPath(channelId).then((path) => `#${path}`)
-      )
-    );
-
-    await api.channels.postMessage(targetChannelId, {
-      content: MESSAGE(stampName, channelPaths),
-      embed: true,
-    });
-  });
-}
+//     await api.channels.postMessage(targetChannelId, {
+//       content: MESSAGE(stampName, channelPaths),
+//       embed: true,
+//     });
+//   });
+// }
 
 client.on("MESSAGE_CREATED", async ({ body }) => {
   const {
@@ -247,35 +247,27 @@ client.on("MESSAGE_CREATED", async ({ body }) => {
     channelId,
     createdAt,
   } = body.message;
-  if (!plainText.includes("ping")) return;
+  if (!plainText.includes("ping") && !plainText.includes("o_ogacha")) return;
 
-  const ping = Date.now() - createdAt.getTime();
-
-  const message = `@${name} pong! (${ping}ms)`;
-
-  console.log(`Sending message: ${message}`);
-
-  await api.channels.postMessage(channelId, { content: message, embed: true });
-});
-
-client.on("MESSAGE_CREATED", async ({ body }) => {
-  const {
-    user: { name },
-    plainText,
-    channelId,
-  } = body.message;
-  if (!plainText.includes("o_o gacha")) return;
-
-  const x = Math.floor(Math.random() * 200) + 1;
-  const message =
-    name == "uni_kakurenbo"
-      ? "oo"
-      : name == "o_o"
-      ? "o" + "_".repeat(300) + "o"
-      : name == "sabakunosaboten"
-      ? "o" + "_".repeat(x + 250) + "o"
-      : "o" + "_".repeat(x) + "o";
-
+  let message = "";
+  if (plainText.includes("ping")) {
+    const ping = Date.now() - createdAt.getTime();
+    message = `@${name} pong! (${ping}ms)`;
+  }
+  if (plainText.includes("o_ogacha")) {
+    const x = Math.floor(Math.random() * 1000) + 1;
+    if (name == "o_o") message = "o" + "_".repeat(1500) + "o";
+    else if (name == "uni_kakurenbo") message = "oo";
+    else if (name == "sabakunosaboten")
+      message = "o" + "_".repeat(x + 2000) + "o";
+    else if (name == "Pugma") message = "o".repeat(x * 3);
+    else if (name == "Salmon_P") message = ":korosu-nya:";
+    else if (name == "Suima") message = "もう寝る時間だよ";
+    else if (name == "howard127") message = "変な遊び方しないでね";
+    else if (name == "yasako" || name == "0mnado")
+      message = "o" + "_".repeat(x + 400) + "o";
+    else message = "o" + "_".repeat(x) + "o";
+  }
   console.log(`Sending message: ${message}`);
 
   await api.channels.postMessage(channelId, { content: message, embed: true });
