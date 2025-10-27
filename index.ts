@@ -256,17 +256,27 @@ client.on("MESSAGE_CREATED", async ({ body }) => {
   }
   if (plainText.includes("o_ogacha")) {
     const x = Math.floor(Math.random() * 1000) + 1;
-    if (name == "o_o") message = "o" + "_".repeat(1500) + "o";
+    if (name == "o_o") message = "o" + "_".repeat(1500 + x) + "o";
     else if (name == "uni_kakurenbo") message = "oo";
     else if (name == "sabakunosaboten")
-      message = "o" + "_".repeat(x + 2000) + "o";
+      message = "o" + "_".repeat(x * 3 + 1000) + "o";
     else if (name == "Pugma") message = "o".repeat(x * 3);
     else if (name == "Salmon_P") message = ":korosu-nya:";
-    else if (name == "Suima") message = "もう寝る時間だよ";
-    else if (name == "howard127") message = "変な遊び方しないでね";
-    else if (name == "yasako" || name == "0mnado")
+    else if (name == "Suima") {
+      if (x < 780) message = "o" + "_".repeat(x) + "o";
+      else message = "もう寝る時間だよ";
+    } else if (name == "howard127") {
+      if (x < 940) message = "o" + "_".repeat(x) + "o";
+      else message = "変な遊び方しないでね";
+    } else if (name == "yasako" || name == "0mnado")
       message = "o" + "_".repeat(x + 400) + "o";
-    else message = "o" + "_".repeat(x) + "o";
+    else if (name == "65536") {
+      if (x < 100) message = "o" + "_".repeat(Math.floor(x / 10 + 1)) + "o";
+      else if (x < 170)
+        message = message = "o" + "_".repeat(Math.floor(x / 5 + 1)) + "o";
+      else if (x < 250) message = "o" + "_".repeat(Math.floor(x / 3 + 1)) + "o";
+      else message = "o" + "_".repeat(x) + "o";
+    } else message = "o" + "_".repeat(x) + "o";
   }
   console.log(`Sending message: ${message}`);
 
